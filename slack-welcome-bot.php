@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Slack Welcome Bot
  * Description:       Sendet neuen Slack-Workspace-Mitgliedern automatisch eine Direktnachricht mit den Team-Regeln aus einer WordPress-Seite.
- * Version:           1.1.0
+ * Version:           1.2.0
  * Requires at least: 5.6
  * Tested up to:      7.1
  * Requires PHP:      7.4
@@ -17,7 +17,7 @@ if (!defined('ABSPATH')) {
     exit; // Kein direkter Zugriff
 }
 
-define('SWB_PLUGIN_VERSION', '1.1.0');
+define('SWB_PLUGIN_VERSION', '1.2.0');
 define('SWB_PLUGIN_DIR', plugin_dir_path(__FILE__));
 
 require_once SWB_PLUGIN_DIR . 'includes/class-swb-html-converter.php';
