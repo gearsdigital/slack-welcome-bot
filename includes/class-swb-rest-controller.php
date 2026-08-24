@@ -58,28 +58,22 @@ class SWB_Rest_Controller
             return new WP_REST_Response($payload['challenge'] ?? '', 200);
         }
 
-        // Retries von Slack (bei Timeout o.ä.) ignorieren - sonst gäbe es doppelte DMs.
-        if ($request->get_header('x_slack_retry_num') !== null) {
-            return new WP_REST_Response('ok', 200);
-        }
-
         $event = $payload['event'] ?? null;
 
         if (!is_array($event) || ($event['type'] ?? null) !== 'team_join') {
             return new WP_REST_Response('ignored', 200);
         }
 
-        // Deduplizierung anhand der event_id (Slack kann Events in seltenen Fällen mehrfach zustellen).
+        // Deduplizierung anhand der event_id (Slack kann Events - inkl. eigener Retries bei
+        // Timeout o.ä. - in seltenen Fällen mehrfach zustellen). Der Key wird erst NACH
+        // erfolgreicher Zustellung gesetzt (siehe unten), damit ein Slack-Retry nach einem
+        // fehlgeschlagenen Zustellversuch die DM tatsächlich noch einmal versuchen kann,
+        // statt fälschlich als "duplicate" verworfen zu werden.
         $event_id = $payload['event_id'] ?? null;
+        $transient_key = $event_id !== null ? 'swb_evt_' . md5((string) $event_id) : null;
 
-        if ($event_id !== null) {
-            $transient_key = 'swb_evt_' . md5((string) $event_id);
-
-            if (get_transient($transient_key)) {
-                return new WP_REST_Response('duplicate', 200);
-            }
-
-            set_transient($transient_key, 1, DAY_IN_SECONDS);
+        if ($transient_key !== null && get_transient($transient_key)) {
+            return new WP_REST_Response('duplicate', 200);
         }
 
         $user_id = $event['user'] ?? null;
@@ -89,8 +83,18 @@ class SWB_Rest_Controller
             $user_id = $user_id['id'] ?? null;
         }
 
-        if (is_string($user_id)) {
-            swb_send_welcome_dm($user_id);
+        if (!is_string($user_id)) {
+            return new WP_REST_Response('ok', 200);
+        }
+
+        if (!swb_send_welcome_dm($user_id)) {
+            // Nicht als erledigt markieren + Non-2xx: löst Slacks eigenen Retry aus,
+            // statt die fehlgeschlagene Zustellung stillschweigend als "ok" zu bestätigen.
+            return new WP_REST_Response('delivery failed', 500);
+        }
+
+        if ($transient_key !== null) {
+            set_transient($transient_key, 1, DAY_IN_SECONDS);
         }
 
         return new WP_REST_Response('ok', 200);
@@ -181,24 +185,26 @@ function swb_build_blocks(string $user_id, int $page_id): array
 
 /**
  * Öffnet die DM und verschickt die Willkommensnachricht.
+ *
+ * @return bool True, wenn die Nachricht nachweislich zugestellt wurde.
  */
-function swb_send_welcome_dm(string $user_id): void
+function swb_send_welcome_dm(string $user_id): bool
 {
     $options = SWB_Settings::get_options();
 
     if ($options['bot_token'] === '') {
         error_log('Slack Welcome Bot: kein Bot-Token konfiguriert.');
-        return;
+        return false;
     }
 
     $client = new SWB_Slack_Client($options['bot_token']);
     $channel_id = $client->open_dm($user_id);
 
     if ($channel_id === null) {
-        return;
+        return false;
     }
 
     $blocks = swb_build_blocks($user_id, (int) $options['rules_page_id']);
 
-    $client->post_message($channel_id, __('Willkommen im Team! Hier sind die wichtigsten Regeln.', 'slack-welcome-bot'), $blocks);
+    return $client->post_message($channel_id, __('Willkommen im Team! Hier sind die wichtigsten Regeln.', 'slack-welcome-bot'), $blocks);
 }
