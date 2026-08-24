@@ -66,6 +66,15 @@ Fertig – ab jetzt bekommt jedes neue Mitglied automatisch die DM mit dem aktue
 
 Getestet und funktionsfähig mit **WordPress 7.1 "Mary Lou"** (Stand August 2026) und PHP 7.4–8.x. Das Plugin nutzt ausschließlich stabile, seit Jahren unveränderte WordPress-APIs (Settings API, REST API, Transients, HTTP API) und ist von der 7.1-Änderung an der internen Hook-Callback-ID-Erzeugung (die z. B. bei WP Rocket kurzzeitig zu Fehlern führte) nicht betroffen, da keine manuelle Hook-Introspektion stattfindet.
 
+## Neue Version veröffentlichen
+
+Das Plugin prüft automatisch gegen die GitHub Releases dieses Repos und zeigt im WP-Backend unter **Plugins** einen normalen "Update verfügbar"-Hinweis inkl. **Jetzt aktualisieren**-Button an.
+
+1. Version in `slack-welcome-bot.php` (Header `Version:` + `SWB_PLUGIN_VERSION`) hochzählen.
+2. Änderungen committen und einen Git-Tag nach SemVer setzen, z. B. `v1.1.0`.
+3. Auf GitHub ein Release aus dem Tag erstellen.
+4. Ein ZIP des kompletten Plugin-Ordners (Ordnername muss `slack-welcome-bot` bleiben) als **Release-Asset** anhängen – **nicht** das automatische "Source code (zip)" von GitHub verwenden, da dessen Ordnername den Tag enthält und das Update sonst fehlschlägt.
+
 ## Sicherheit
 
 - Jede eingehende Anfrage wird über die Slack-Signatur verifiziert – Anfragen ohne gültige Signatur werden mit HTTP 401 abgelehnt.
