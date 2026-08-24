@@ -3,7 +3,7 @@
   "private": true,
   "description": "Release tooling (semantic-release) for the Slack Welcome Bot WordPress plugin.",
   "scripts": {
-    "test": "node --test bin/**/*.test.js"
+    "test": "node --test"
   },
   "devDependencies": {
     "semantic-release": "^24.0.0",
