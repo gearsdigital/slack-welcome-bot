@@ -62,6 +62,68 @@ if (!function_exists('wp_remote_retrieve_body')) {
     }
 }
 
+if (!function_exists('apply_filters')) {
+    function apply_filters(string $tag, $value, ...$args)
+    {
+        return $value;
+    }
+}
+
+if (!function_exists('setup_postdata')) {
+    function setup_postdata($post): bool
+    {
+        return true;
+    }
+}
+
+if (!function_exists('wp_reset_postdata')) {
+    function wp_reset_postdata(): void
+    {
+    }
+}
+
+if (!function_exists('wp_dropdown_pages')) {
+    function wp_dropdown_pages(array $args = []): ?string
+    {
+        return '';
+    }
+}
+
+if (!function_exists('esc_html')) {
+    function esc_html(string $text): string
+    {
+        return htmlspecialchars($text, ENT_QUOTES);
+    }
+}
+
+if (!function_exists('esc_html__')) {
+    function esc_html__(string $text, string $domain = 'default'): string
+    {
+        return esc_html(__($text, $domain));
+    }
+}
+
+if (!function_exists('esc_attr')) {
+    function esc_attr(string $text): string
+    {
+        return htmlspecialchars($text, ENT_QUOTES);
+    }
+}
+
+if (!function_exists('esc_attr__')) {
+    function esc_attr__(string $text, string $domain = 'default'): string
+    {
+        return esc_attr(__($text, $domain));
+    }
+}
+
+if (!function_exists('esc_url')) {
+    function esc_url(string $url): string
+    {
+        return $url;
+    }
+}
+
 /**
  * In-memory stand-in for WordPress options, transients, and the Slack
  * HTTP calls the plugin would otherwise make, so tests can configure and
@@ -72,6 +134,7 @@ class SWB_Test_State
     public static array $options = [];
     public static array $transients = [];
     public static array $http_calls = [];
+    public static array $posts = [];
     public static bool $slack_should_fail = false;
 
     public static function reset(): void
@@ -79,7 +142,28 @@ class SWB_Test_State
         self::$options = [];
         self::$transients = [];
         self::$http_calls = [];
+        self::$posts = [];
         self::$slack_should_fail = false;
+    }
+}
+
+if (!class_exists('WP_Post')) {
+    class WP_Post
+    {
+        public function __construct(
+            public int $ID,
+            public string $post_status = 'publish',
+            public string $post_content = '',
+            public string $post_password = ''
+        ) {
+        }
+    }
+}
+
+if (!function_exists('get_post')) {
+    function get_post(int $id): ?WP_Post
+    {
+        return SWB_Test_State::$posts[$id] ?? null;
     }
 }
 

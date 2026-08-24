@@ -19,9 +19,11 @@ Sendet jedem neuen Slack-Workspace-Mitglied automatisch eine Direktnachricht mit
 
 ### 1. Regel-Seite anlegen
 
-Erstellt in WordPress eine normale Seite (z. B. **Seiten → Erstellen**) mit dem gewünschten Regeltext, z. B. "Slack-Regeln". Diese Seite muss **veröffentlicht** sein (nicht Entwurf, nicht passwortgeschützt).
+Erstellt in WordPress eine normale Seite (z. B. **Seiten → Erstellen**) mit dem gewünschten Regeltext, z. B. "Slack-Regeln". Diese Seite muss **veröffentlicht oder privat** sein (kein Entwurf).
 
 Unterstützt werden: Fettung, Kursivschrift, Listen, Links, Überschriften – wird automatisch ins passende Slack-Format umgewandelt.
+
+**Nicht-öffentliche Seiten:** Sowohl Seiten mit Sichtbarkeit "Privat" als auch passwortgeschützte Seiten können als Regel-Seite ausgewählt werden – die Willkommens-DM liest den Inhalt direkt aus der WordPress-Datenbank, unabhängig vom Passwort oder der Sichtbarkeit. Ist eine solche Seite ausgewählt, erscheint auf der Einstellungsseite ein entsprechender Hinweis.
 
 ### 2. Slack App erstellen
 

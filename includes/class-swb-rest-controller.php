@@ -138,7 +138,10 @@ function swb_build_blocks(string $user_id, int $page_id): array
 
     $page = $page_id > 0 ? get_post($page_id) : null;
 
-    if ($page instanceof WP_Post && $page->post_status === 'publish') {
+    // "private" Seiten sind zulässig: die Willkommens-DM liest den Inhalt per get_post()
+    // direkt aus der Datenbank, unabhängig von der WordPress-Sichtbarkeit oder einem
+    // Seitenpasswort (siehe Hinweis auf der Einstellungsseite).
+    if ($page instanceof WP_Post && in_array($page->post_status, ['publish', 'private'], true)) {
         // Viele Plugins (SEO, Related-Posts, Shortcodes) hängen sich in "the_content" ein
         // und erwarten dabei einen gültigen globalen $post. Da wir außerhalb des normalen
         // Loops laufen (Webhook-Request), müssen wir das explizit herstellen und danach

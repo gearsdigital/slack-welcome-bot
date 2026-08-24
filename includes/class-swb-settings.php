@@ -116,9 +116,55 @@ class SWB_Settings
             'selected' => $options['rules_page_id'],
             'show_option_none' => __('– Seite auswählen –', 'slack-welcome-bot'),
             'option_none_value' => 0,
+            // Auch nicht-öffentliche Seiten (Sichtbarkeit "Privat") zur Auswahl anbieten -
+            // die Willkommens-DM liest den Inhalt direkt aus der Datenbank, unabhängig
+            // von der WordPress-Sichtbarkeit oder einem Seitenpasswort.
+            'post_status' => ['publish', 'private'],
         ]);
 
         echo '<p class="description">' . esc_html__('Der veröffentlichte Inhalt dieser WordPress-Seite wird 1:1 als Regeltext in der Willkommens-DM verwendet.', 'slack-welcome-bot') . '</p>';
+
+        $this->render_restricted_page_notice((int) $options['rules_page_id']);
+    }
+
+    /**
+     * Weist darauf hin, dass eine private/passwortgeschützte Seite trotz ihres
+     * WordPress-Schutzes unverändert per Slack-DM verschickt wird.
+     */
+    private function render_restricted_page_notice(int $page_id): void
+    {
+        if ($page_id <= 0) {
+            return;
+        }
+
+        $page = get_post($page_id);
+
+        if (!$page instanceof WP_Post) {
+            return;
+        }
+
+        $reasons = [];
+
+        if ($page->post_status === 'private') {
+            $reasons[] = __('nur für angemeldete Benutzer mit entsprechenden Rechten sichtbar (Sichtbarkeit "Privat")', 'slack-welcome-bot');
+        }
+
+        if ($page->post_password !== '') {
+            $reasons[] = __('passwortgeschützt', 'slack-welcome-bot');
+        }
+
+        if ($reasons === []) {
+            return;
+        }
+
+        printf(
+            '<p class="description" style="color:#b32d2e;">⚠️ %s</p>',
+            esc_html(sprintf(
+                /* translators: %s: Grund/Gründe, z. B. "passwortgeschützt" */
+                __('Diese Seite ist %s. Der Inhalt wird trotzdem unverändert an neue Slack-Mitglieder gesendet – der WordPress-Schutz gilt nur für Website-Besucher, nicht für dieses Plugin.', 'slack-welcome-bot'),
+                implode(__(' und ', 'slack-welcome-bot'), $reasons)
+            ))
+        );
     }
 
     public function render_settings_page(): void
