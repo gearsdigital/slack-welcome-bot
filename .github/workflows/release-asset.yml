@@ -1,0 +1,28 @@
+name: Attach plugin ZIP to release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-attach:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build plugin ZIP
+        run: |
+          mkdir -p build/slack-welcome-bot
+          cp slack-welcome-bot.php uninstall.php README.md build/slack-welcome-bot/
+          cp -R includes build/slack-welcome-bot/
+          cd build
+          zip -qr slack-welcome-bot.zip slack-welcome-bot
+
+      - name: Upload to GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${GITHUB_REF_NAME}" build/slack-welcome-bot.zip --clobber

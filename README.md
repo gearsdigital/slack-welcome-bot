@@ -68,12 +68,16 @@ Getestet und funktionsfähig mit **WordPress 7.1 "Mary Lou"** (Stand August 2026
 
 ## Neue Version veröffentlichen
 
-Das Plugin prüft automatisch gegen die GitHub Releases dieses Repos und zeigt im WP-Backend unter **Plugins** einen normalen "Update verfügbar"-Hinweis inkl. **Jetzt aktualisieren**-Button an.
+Das Plugin prüft automatisch gegen die GitHub Releases dieses Repos und zeigt im WP-Backend unter **Plugins** einen normalen "Update verfügbar"-Hinweis inkl. **Jetzt aktualisieren**-Button an. Versionierung und Release sind über zwei GitHub-Actions-Workflows automatisiert:
 
-1. Version in `slack-welcome-bot.php` (Header `Version:` + `SWB_PLUGIN_VERSION`) hochzählen.
-2. Änderungen committen und einen Git-Tag nach SemVer setzen, z. B. `v1.1.0`.
-3. Auf GitHub ein Release aus dem Tag erstellen.
-4. Ein ZIP des kompletten Plugin-Ordners (Ordnername muss `slack-welcome-bot` bleiben) als **Release-Asset** anhängen – **nicht** das automatische "Source code (zip)" von GitHub verwenden, da dessen Ordnername den Tag enthält und das Update sonst fehlschlägt.
+1. Commits nach [Conventional Commits](https://www.conventionalcommits.org/) schreiben (`fix:`, `feat:`, `feat!:`/`BREAKING CHANGE:` für major, …) – daraus leitet semantic-release die nächste Version ab.
+2. Im GitHub-Repo unter **Actions → Release → Run workflow** manuell anstoßen (`.github/workflows/release.yml`).
+   - Ermittelt per `semantic-release` die nächste Version aus den Commits seit dem letzten Tag.
+   - Schreibt die Version in den Plugin-Header + `SWB_PLUGIN_VERSION` zurück, aktualisiert `CHANGELOG.md`.
+   - Committet, taggt (`vX.Y.Z`) und erstellt das GitHub Release automatisch.
+3. Der Tag-Push löst `.github/workflows/release-asset.yml` aus, das ein ZIP des Plugin-Ordners baut und als Release-Asset anhängt – das ist die Datei, die der Update-Checker in WordPress herunterlädt.
+
+Kein Conventional-Commit seit dem letzten Tag → semantic-release bricht ohne neue Version ab (kein Release).
 
 ## Sicherheit
 
