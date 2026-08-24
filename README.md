@@ -79,6 +79,13 @@ Das Plugin prüft automatisch gegen die GitHub Releases dieses Repos und zeigt i
 
 Kein Conventional-Commit seit dem letzten Tag → semantic-release bricht ohne neue Version ab (kein Release).
 
+## Tests
+
+- `composer install && composer test` – PHPUnit-Tests für HTML→Slack-Konvertierung und Webhook-Signaturprüfung (`tests/`).
+- `npm test` – Tests für das Release-Tooling (`bin/`).
+
+Beide laufen automatisch per GitHub Actions bei jedem Push/PR (`.github/workflows/tests.yml`).
+
 ## Sicherheit
 
 - Jede eingehende Anfrage wird über die Slack-Signatur verifiziert – Anfragen ohne gültige Signatur werden mit HTTP 401 abgelehnt.

@@ -15,11 +15,21 @@ class SWB_Html_Converter
         // Script/Style-Blöcke entfernen
         $html = preg_replace('#<(script|style)\b[^>]*>.*?</\1>#is', '', $html);
 
-        // Links: <a href="URL">TEXT</a> -> <URL|TEXT>
-        $html = preg_replace_callback('#<a[^>]*href=["\']([^"\']+)["\'][^>]*>(.*?)</a>#is', function ($m) {
+        // Links: <a href="URL">TEXT</a> -> <URL|TEXT>. Das Ergebnis wird hinter einem
+        // Platzhalter versteckt, weil das finale wp_strip_all_tags() weiter unten sonst
+        // "<URL|TEXT>" selbst wie ein HTML-Tag entfernen würde.
+        $link_placeholders = [];
+        $html = preg_replace_callback('#<a[^>]*href=["\']([^"\']+)["\'][^>]*>(.*?)</a>#is', function ($m) use (&$link_placeholders) {
             $url = html_entity_decode(trim($m[1]), ENT_QUOTES | ENT_HTML5, 'UTF-8');
             $text = trim(wp_strip_all_tags($m[2]));
-            return $text !== '' ? "<{$url}|{$text}>" : $url;
+            $slack_link = $text !== '' ? "<{$url}|{$text}>" : $url;
+
+            // Rein alphanumerisch halten: Steuerzeichen wie \x00 würden von
+            // strip_tags() weiter unten mit entfernt und den Platzhalter zerstören.
+            $placeholder = 'SWBLINKPLACEHOLDER' . count($link_placeholders) . 'END';
+            $link_placeholders[$placeholder] = $slack_link;
+
+            return $placeholder;
         }, $html);
 
         // Fett / Kursiv
@@ -48,8 +58,9 @@ class SWB_Html_Converter
         $lines = array_map('rtrim', explode("\n", $text));
         $text = implode("\n", $lines);
         $text = preg_replace("/\n{3,}/", "\n\n", $text);
+        $text = trim($text);
 
-        return trim($text);
+        return $link_placeholders !== [] ? strtr($text, $link_placeholders) : $text;
     }
 
     /**

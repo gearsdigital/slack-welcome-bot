@@ -1,0 +1,15 @@
+{
+    "name": "gearsdigital/slack-welcome-bot",
+    "description": "Test tooling for the Slack Welcome Bot WordPress plugin.",
+    "type": "project",
+    "license": "GPL-2.0-or-later",
+    "require": {
+        "php": ">=7.4"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.5"
+    },
+    "scripts": {
+        "test": "phpunit"
+    }
+}

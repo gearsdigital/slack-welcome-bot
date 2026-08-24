@@ -43,7 +43,7 @@ class SWB_Rest_Controller
 
         $options = SWB_Settings::get_options();
 
-        if (!$this->verify_signature($options['signing_secret'], $raw_body, $timestamp, $signature)) {
+        if (!self::verify_signature($options['signing_secret'], $raw_body, $timestamp, $signature)) {
             return new WP_REST_Response('Invalid signature', 401);
         }
 
@@ -96,7 +96,7 @@ class SWB_Rest_Controller
         return new WP_REST_Response('ok', 200);
     }
 
-    private function verify_signature(string $signing_secret, string $raw_body, ?string $timestamp, ?string $signature): bool
+    public static function verify_signature(string $signing_secret, string $raw_body, ?string $timestamp, ?string $signature): bool
     {
         if ($signing_secret === '' || $timestamp === null || $signature === null) {
             return false;

@@ -2,6 +2,9 @@
   "name": "slack-welcome-bot",
   "private": true,
   "description": "Release tooling (semantic-release) for the Slack Welcome Bot WordPress plugin.",
+  "scripts": {
+    "test": "node --test bin/**/*.test.js"
+  },
   "devDependencies": {
     "semantic-release": "^24.0.0",
     "@semantic-release/changelog": "^6.0.3",
