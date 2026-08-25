@@ -14,7 +14,7 @@
  */
 
 if (!defined('ABSPATH')) {
-    exit; // Kein direkter Zugriff
+    exit; // No direct access
 }
 
 define('SWB_PLUGIN_VERSION', '1.2.0');
@@ -27,7 +27,7 @@ require_once SWB_PLUGIN_DIR . 'includes/class-swb-rest-controller.php';
 require_once SWB_PLUGIN_DIR . 'vendor/autoload.php';
 
 /**
- * Plugin initialisieren.
+ * Initialize the plugin.
  */
 function swb_init(): void
 {
@@ -37,8 +37,8 @@ function swb_init(): void
 add_action('plugins_loaded', 'swb_init');
 
 /**
- * Update-Prüfung gegen GitHub Releases, damit WordPress im Backend
- * auf neue Versionen hinweist (das Plugin ist nicht im wordpress.org-Verzeichnis).
+ * Check for updates against GitHub Releases, so WordPress can notify the
+ * backend of new versions (the plugin isn't listed on wordpress.org).
  */
 function swb_init_update_checker(): void
 {
@@ -52,7 +52,7 @@ function swb_init_update_checker(): void
 add_action('init', 'swb_init_update_checker');
 
 /**
- * Direkter Link zu den Plugin-Einstellungen in der Plugin-Liste.
+ * Direct link to the plugin settings from the plugin list.
  */
 function swb_plugin_action_links(array $links): array
 {

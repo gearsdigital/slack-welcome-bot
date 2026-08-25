@@ -30,7 +30,7 @@ class SWB_Rest_Controller
         register_rest_route(self::NAMESPACE, self::ROUTE, [
             'methods' => WP_REST_Server::CREATABLE,
             'callback' => [$this, 'handle_event'],
-            // Slack authentifiziert sich über die Signatur (siehe verify_signature), nicht über WP-Nutzer/Nonces.
+            // Slack authenticates via the signature (see verify_signature), not via WP users/nonces.
             'permission_callback' => '__return_true',
         ]);
     }
@@ -53,7 +53,7 @@ class SWB_Rest_Controller
             return new WP_REST_Response('Invalid payload', 400);
         }
 
-        // URL-Verification-Handshake (einmalig beim Einrichten der Event Subscription)
+        // URL verification handshake (once, when setting up the event subscription)
         if (($payload['type'] ?? null) === 'url_verification') {
             return new WP_REST_Response($payload['challenge'] ?? '', 200);
         }
@@ -64,11 +64,11 @@ class SWB_Rest_Controller
             return new WP_REST_Response('ignored', 200);
         }
 
-        // Deduplizierung anhand der event_id (Slack kann Events - inkl. eigener Retries bei
-        // Timeout o.ä. - in seltenen Fällen mehrfach zustellen). Der Key wird erst NACH
-        // erfolgreicher Zustellung gesetzt (siehe unten), damit ein Slack-Retry nach einem
-        // fehlgeschlagenen Zustellversuch die DM tatsächlich noch einmal versuchen kann,
-        // statt fälschlich als "duplicate" verworfen zu werden.
+        // Deduplication by event_id (Slack can, in rare cases, deliver an event more than
+        // once - including its own retries on timeouts and the like). The key is only set
+        // AFTER successful delivery (see below), so that a Slack retry following a failed
+        // delivery attempt can actually retry the DM, instead of being wrongly discarded
+        // as a "duplicate".
         $event_id = $payload['event_id'] ?? null;
         $transient_key = $event_id !== null ? 'swb_evt_' . md5((string) $event_id) : null;
 
@@ -78,7 +78,7 @@ class SWB_Rest_Controller
 
         $user_id = $event['user'] ?? null;
 
-        // Slack liefert bei team_join das komplette User-Objekt, keine bloße ID.
+        // Slack delivers the full user object on team_join, not just an ID.
         if (is_array($user_id)) {
             $user_id = $user_id['id'] ?? null;
         }
@@ -88,8 +88,8 @@ class SWB_Rest_Controller
         }
 
         if (!swb_send_welcome_dm($user_id)) {
-            // Nicht als erledigt markieren + Non-2xx: löst Slacks eigenen Retry aus,
-            // statt die fehlgeschlagene Zustellung stillschweigend als "ok" zu bestätigen.
+            // Don't mark as done + non-2xx: triggers Slack's own retry, instead of
+            // silently confirming a failed delivery as "ok".
             return new WP_REST_Response('delivery failed', 500);
         }
 
@@ -106,7 +106,7 @@ class SWB_Rest_Controller
             return false;
         }
 
-        // Schutz vor Replay-Attacken: Requests älter als 5 Minuten ablehnen.
+        // Protection against replay attacks: reject requests older than 5 minutes.
         if (abs(time() - (int) $timestamp) > 300) {
             return false;
         }
@@ -119,12 +119,12 @@ class SWB_Rest_Controller
 }
 
 /**
- * Baut die Nachrichten-Blocks: Begrüßung + Inhalt der ausgewählten WordPress-Seite.
+ * Builds the message blocks: greeting + content of the selected WordPress page.
  */
 function swb_build_blocks(string $user_id, int $page_id): array
 {
     $greeting = sprintf(
-        /* translators: %s: Slack user mention, z. B. <@U12345> */
+        /* translators: %s: Slack user mention, e.g. <@U12345> */
         __('Herzlich willkommen im Team, %s! :wave:', 'slack-welcome-bot'),
         "<@{$user_id}>"
     );
@@ -138,14 +138,14 @@ function swb_build_blocks(string $user_id, int $page_id): array
 
     $page = $page_id > 0 ? get_post($page_id) : null;
 
-    // "private" Seiten sind zulässig: die Willkommens-DM liest den Inhalt per get_post()
-    // direkt aus der Datenbank, unabhängig von der WordPress-Sichtbarkeit oder einem
-    // Seitenpasswort (siehe Hinweis auf der Einstellungsseite).
+    // "private" pages are allowed: the welcome DM reads the content via get_post()
+    // directly from the database, regardless of WordPress visibility or a page
+    // password (see the notice on the settings page).
     if ($page instanceof WP_Post && in_array($page->post_status, ['publish', 'private'], true)) {
-        // Viele Plugins (SEO, Related-Posts, Shortcodes) hängen sich in "the_content" ein
-        // und erwarten dabei einen gültigen globalen $post. Da wir außerhalb des normalen
-        // Loops laufen (Webhook-Request), müssen wir das explizit herstellen und danach
-        // wieder sauber zurücksetzen, damit wir keine anderen Hooks/Requests beeinflussen.
+        // Many plugins (SEO, related posts, shortcodes) hook into "the_content" and
+        // expect a valid global $post there. Since we're running outside the normal
+        // loop (webhook request), we need to set this up explicitly and then restore
+        // it cleanly afterwards, so we don't affect other hooks/requests.
         global $post;
         $previous_post = $post;
 
@@ -182,14 +182,14 @@ function swb_build_blocks(string $user_id, int $page_id): array
         ];
     }
 
-    // Slack erlaubt max. 50 Blocks pro Nachricht.
+    // Slack allows a max. of 50 blocks per message.
     return array_slice($blocks, 0, 50);
 }
 
 /**
- * Öffnet die DM und verschickt die Willkommensnachricht.
+ * Opens the DM and sends the welcome message.
  *
- * @return bool True, wenn die Nachricht nachweislich zugestellt wurde.
+ * @return bool True if the message was verifiably delivered.
  */
 function swb_send_welcome_dm(string $user_id): bool
 {

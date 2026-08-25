@@ -116,9 +116,9 @@ class SWB_Settings
             'selected' => $options['rules_page_id'],
             'show_option_none' => __('– Seite auswählen –', 'slack-welcome-bot'),
             'option_none_value' => 0,
-            // Auch nicht-öffentliche Seiten (Sichtbarkeit "Privat") zur Auswahl anbieten -
-            // die Willkommens-DM liest den Inhalt direkt aus der Datenbank, unabhängig
-            // von der WordPress-Sichtbarkeit oder einem Seitenpasswort.
+            // Also offer non-public pages (visibility "private") for selection - the
+            // welcome DM reads the content directly from the database, regardless of
+            // WordPress visibility or a page password.
             'post_status' => ['publish', 'private'],
         ]);
 
@@ -128,8 +128,8 @@ class SWB_Settings
     }
 
     /**
-     * Weist darauf hin, dass eine private/passwortgeschützte Seite trotz ihres
-     * WordPress-Schutzes unverändert per Slack-DM verschickt wird.
+     * Warns that a private/password-protected page is still sent unchanged via
+     * Slack DM, despite its WordPress protection.
      */
     private function render_restricted_page_notice(int $page_id): void
     {
@@ -160,7 +160,7 @@ class SWB_Settings
         printf(
             '<p class="description" style="color:#b32d2e;">⚠️ %s</p>',
             esc_html(sprintf(
-                /* translators: %s: Grund/Gründe, z. B. "passwortgeschützt" */
+                /* translators: %s: reason(s), e.g. "password-protected" */
                 __('Diese Seite ist %s. Der Inhalt wird trotzdem unverändert an neue Slack-Mitglieder gesendet – der WordPress-Schutz gilt nur für Website-Besucher, nicht für dieses Plugin.', 'slack-welcome-bot'),
                 implode(__(' und ', 'slack-welcome-bot'), $reasons)
             ))

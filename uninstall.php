@@ -1,7 +1,7 @@
 <?php
 
-// Wird von WordPress automatisch aufgerufen, wenn das Plugin über
-// "Plugins → Installierte Plugins → Löschen" entfernt wird (nicht bei reiner Deaktivierung).
+// Called automatically by WordPress when the plugin is removed via
+// "Plugins → Installed Plugins → Delete" (not on a plain deactivation).
 
 if (!defined('WP_UNINSTALL_PLUGIN')) {
     exit;

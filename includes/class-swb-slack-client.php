@@ -14,7 +14,7 @@ class SWB_Slack_Client
     }
 
     /**
-     * Öffnet (oder holt) den DM-Kanal mit einem User. Gibt die Channel-ID zurück oder null bei Fehler.
+     * Opens (or fetches) the DM channel with a user. Returns the channel ID or null on failure.
      */
     public function open_dm(string $user_id): ?string
     {
@@ -29,7 +29,7 @@ class SWB_Slack_Client
     }
 
     /**
-     * Sendet eine Nachricht mit Blocks in einen Channel/DM.
+     * Sends a message with blocks to a channel/DM.
      */
     public function post_message(string $channel, string $fallback_text, array $blocks): bool
     {
