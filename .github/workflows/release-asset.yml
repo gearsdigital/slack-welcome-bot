@@ -14,11 +14,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+
+      - run: composer install --no-interaction --prefer-dist --no-dev --optimize-autoloader
+
       - name: Build plugin ZIP
         run: |
           mkdir -p build/slack-welcome-bot
           cp slack-welcome-bot.php uninstall.php README.md build/slack-welcome-bot/
-          cp -R includes build/slack-welcome-bot/
+          cp -R includes vendor build/slack-welcome-bot/
           cd build
           zip -qr slack-welcome-bot.zip slack-welcome-bot
 

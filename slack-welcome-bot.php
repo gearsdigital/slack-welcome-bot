@@ -24,7 +24,7 @@ require_once SWB_PLUGIN_DIR . 'includes/class-swb-html-converter.php';
 require_once SWB_PLUGIN_DIR . 'includes/class-swb-slack-client.php';
 require_once SWB_PLUGIN_DIR . 'includes/class-swb-settings.php';
 require_once SWB_PLUGIN_DIR . 'includes/class-swb-rest-controller.php';
-require_once SWB_PLUGIN_DIR . 'includes/plugin-update-checker/plugin-update-checker.php';
+require_once SWB_PLUGIN_DIR . 'vendor/autoload.php';
 
 /**
  * Plugin initialisieren.
